@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-// import { useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Mail,
   Linkedin,
@@ -39,21 +38,216 @@ import tailwind from "./assets/imgs/tailwind.svg"
 const mockImages = {
   html: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg",
   css: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg",
-  bootstrap:
-    "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg",
+  bootstrap: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg",
   js: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg",
-  mysql:
-    "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg",
-  figma:
-    "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg",
-  react:
-    "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",
-  nodejs:
-    "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",
-  python:
-    "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
-  infodoc: infoDoc,
-  cgpa: cgpa,
+  mysql: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg",
+  figma: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg",
+  react: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",
+  nodejs: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg",
+  python: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
+  express: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg",
+  firebase: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg",
+  mongodb: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg",
+  tailwind: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg",
+  infodoc: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?auto=format&fit=crop&w=800&h=600",
+  cgpa: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&h=600",
+};
+
+// Custom Cursor Component
+const CustomCursor = () => {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [trail, setTrail] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
+
+  useEffect(() => {
+    let animationFrame;
+
+    const updatePosition = (e) => {
+      const newPosition = { x: e.clientX, y: e.clientY };
+      setPosition(newPosition);
+      setIsVisible(true);
+
+      // Update trail
+      setTrail(prevTrail => {
+        const newTrail = [newPosition, ...prevTrail.slice(0, 15)];
+        return newTrail;
+      });
+    };
+
+    const handleMouseDown = () => setIsClicked(true);
+    const handleMouseUp = () => setIsClicked(false);
+    const handleMouseLeave = () => setIsVisible(false);
+    const handleMouseEnter = () => setIsVisible(true);
+
+    document.addEventListener('mousemove', updatePosition);
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('mouseenter', handleMouseEnter);
+
+    return () => {
+      document.removeEventListener('mousemove', updatePosition);
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('mouseenter', handleMouseEnter);
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+    };
+  }, []);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="fixed top-0 left-0 pointer-events-none z-50 mix-blend-difference">
+      {/* Trail */}
+      {trail.map((pos, index) => (
+        <div
+          key={index}
+          className="absolute w-2 h-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+          style={{
+            left: pos.x - 4,
+            top: pos.y - 4,
+            opacity: 1 - (index / trail.length),
+            transform: `scale(${1 - (index / trail.length) * 0.8})`,
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out'
+          }}
+        />
+      ))}
+      
+      {/* Main cursor */}
+      <div
+        className={`absolute w-6 h-6 border-2 border-yellow-400 rounded-full transition-transform duration-100 ${
+          isClicked ? 'scale-75' : 'scale-100'
+        }`}
+        style={{
+          left: position.x - 12,
+          top: position.y - 12,
+          background: 'radial-gradient(circle, rgba(251, 191, 36, 0.3) 0%, transparent 70%)',
+        }}
+      />
+    </div>
+  );
+};
+
+// Particles Component
+const ParticlesBackground = () => {
+  const [particles, setParticles] = useState([]);
+  const [connections, setConnections] = useState([]);
+
+  useEffect(() => {
+    const particleCount = 80;
+    const maxDistance = 150;
+
+    // Initialize particles
+    const initialParticles = Array.from({ length: particleCount }, (_, i) => ({
+      id: i,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      size: Math.random() * 3 + 1,
+    }));
+
+    setParticles(initialParticles);
+
+    let animationId;
+
+    const animate = () => {
+      setParticles(prevParticles => {
+        const newParticles = prevParticles.map(particle => {
+          let newX = particle.x + particle.vx;
+          let newY = particle.y + particle.vy;
+
+          // Bounce off edges
+          if (newX < 0 || newX > window.innerWidth) particle.vx *= -1;
+          if (newY < 0 || newY > window.innerHeight) particle.vy *= -1;
+
+          newX = Math.max(0, Math.min(window.innerWidth, newX));
+          newY = Math.max(0, Math.min(window.innerHeight, newY));
+
+          return { ...particle, x: newX, y: newY };
+        });
+
+        // Calculate connections
+        const newConnections = [];
+        for (let i = 0; i < newParticles.length; i++) {
+          for (let j = i + 1; j < newParticles.length; j++) {
+            const dx = newParticles[i].x - newParticles[j].x;
+            const dy = newParticles[i].y - newParticles[j].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < maxDistance) {
+              newConnections.push({
+                from: newParticles[i],
+                to: newParticles[j],
+                opacity: 1 - (distance / maxDistance)
+              });
+            }
+          }
+        }
+
+        setConnections(newConnections);
+        return newParticles;
+      });
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    const handleResize = () => {
+      setParticles(prevParticles =>
+        prevParticles.map(particle => ({
+          ...particle,
+          x: Math.min(particle.x, window.innerWidth),
+          y: Math.min(particle.y, window.innerHeight)
+        }))
+      );
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0">
+      <svg width="100%" height="100%" className="absolute inset-0">
+        {/* Connections */}
+        {connections.map((connection, index) => (
+          <line
+            key={index}
+            x1={connection.from.x}
+            y1={connection.from.y}
+            x2={connection.to.x}
+            y2={connection.to.y}
+            stroke="rgba(251, 191, 36, 0.3)"
+            strokeWidth="1"
+            opacity={connection.opacity * 0.6}
+          />
+        ))}
+      </svg>
+
+      {/* Particles */}
+      {particles.map(particle => (
+        <div
+          key={particle.id}
+          className="absolute bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+          style={{
+            left: particle.x - particle.size / 2,
+            top: particle.y - particle.size / 2,
+            width: particle.size,
+            height: particle.size,
+            boxShadow: `0 0 ${particle.size * 2}px rgba(251, 191, 36, 0.5)`
+          }}
+        />
+      ))}
+    </div>
+  );
 };
 
 const App = () => {
@@ -70,6 +264,15 @@ const App = () => {
     "Driven Tech Enthusiast",
     "Analytical Coder",
   ];
+
+  useEffect(() => {
+    // Hide default cursor
+    document.body.style.cursor = 'none';
+    
+    return () => {
+      document.body.style.cursor = 'auto';
+    };
+  }, []);
 
   useEffect(() => {
     // Simulate AOS animations with Intersection Observer
@@ -124,6 +327,12 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      {/* Custom Cursor */}
+      <CustomCursor />
+      
+      {/* Particles Background */}
+      <ParticlesBackground />
+
       {/* Animated Background */}
       <div className="fixed inset-0 z-0">
         <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
@@ -141,7 +350,6 @@ const App = () => {
         <Skills />
         <Projects />
         <CurrentlyLearning />
-        {/* <Platforms /> */}
         <Footer />
       </div>
     </div>
@@ -160,7 +368,6 @@ const Header = ({ isMenuOpen, setIsMenuOpen }) => (
           "SKILLS",
           "PROJECTS",
           "LEARNING",
-          // "PLATFORMS",
           "CONTACT",
         ].map((item) => (
           <a
@@ -212,11 +419,11 @@ const MainContent = ({ currentText, setCurrentText }) => (
     {/* Image on the left */}
     <div className="flex-shrink-0" data-aos="fade-right">
       <div className="absolute -inset-4 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-full blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
-      <div className="relative w-72 h-72 md:w-92 md:h-92 -full bg-gradient-to-br from-yellow-400 to-amber-600 p-1 animate-float">
-        <div className="w-full h-full -full bg-yellow-200 flex items-center justify-center overflow-hidden">
+      <div className="relative w-72 h-72 md:w-92 md:h-92 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 p-1 animate-float">
+        <div className="w-full h-full rounded-full bg-yellow-200 flex items-center justify-center overflow-hidden">
           <img
             src={me}
-            className="w-56 h-56 md:w-92 md:h-92 -full object-cover"
+            className="w-56 h-56 md:w-92 md:h-92 rounded-full object-cover"
             alt="Sharan"
           />
         </div>
@@ -297,7 +504,7 @@ const AboutMe = () => (
             <h2 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-8 text-center">
               About Me
             </h2>
-  
+
             <div className="space-y-6">
               <p className="text-lg text-gray-200 leading-relaxed">
                 I'm Sathiyapriya V, an aspiring{" "}
@@ -361,7 +568,7 @@ const AboutMe = () => (
               </div>
 
               <a
-                href="https://drive.google.com/file/d/107jxez_xPn6Z6YqiAIG2RAJomp6Hyxxq/view?usp=sharing"
+                href="https://drive.google.com/file/d/1X5yux01a49fqy3MJeeuJMN1cuY8k_yWR/view?usp=sharing"
                 className="inline-flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold rounded-full hover:from-orange-500 hover:to-yellow-400 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
               >
                 <Download className="w-5 h-5" />
@@ -384,18 +591,18 @@ const AboutMe = () => (
 
 const Skills = () => {
   const skills = [
-    { name: "React", icon: reactIcon, category: "Frontend" },
+    { name: "React", icon: mockImages.react, category: "Frontend" },
     { name: "Figma", icon: mockImages.figma, category: "Design" },
     { name: "Tailwind", icon: tailwind, category: "Design" },
     { name: "HTML", icon: mockImages.html, category: "Frontend" },
     { name: "CSS", icon: mockImages.css, category: "Frontend" },
     { name: "JavaScript", icon: mockImages.js, category: "Programming" },
     { name: "Node", icon: mockImages.nodejs, category: "Framework" },
-    { name: "Express", icon: express, category: "Framework" },
+    { name: "Express", icon: mockImages.express, category: "Framework" },
     { name: "Bootstrap", icon: mockImages.bootstrap, category: "Design" },
     { name: "MySQL", icon: mockImages.mysql, category: "Database" },
-    { name: "MongoDB", icon: mongodb, category: "Database" },
-    { name: "Firebase", icon: firebase, category: "Database" },
+    { name: "MongoDB", icon: mockImages.mongodb, category: "Database" },
+    { name: "Firebase", icon: mockImages.firebase, category: "Database" },
   ];
 
   const getCategoryIcon = (category) => {
@@ -432,7 +639,7 @@ const Skills = () => {
           {skills.map((skill, index) => (
             <span
               key={skill.name}
-              className="px-6 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-lg font-semibold rounded-full hover:scale-110 transition-transform duration-300 cursor-pointer"
+              className="px-6 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-lg font-semibold rounded-full hover:scale-110 transition-transform duration-300"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {skill.name}
@@ -467,20 +674,6 @@ const Skills = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Stars */}
-              {/* <div className="flex space-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-5 h-5 transition-all duration-200 hover:scale-125 ${
-                      i < skill.rating 
-                        ? 'text-yellow-400 fill-yellow-400' 
-                        : 'text-gray-600'
-                    }`}
-                  />
-                ))}
-              </div> */}
             </div>
           ))}
         </div>
@@ -545,18 +738,9 @@ const CurrentlyLearning = () => {
               style={{ animationDelay: `${index * 200}ms` }}
             >
               <div className="flex items-center space-x-4 mb-4">
-                {/* <img
-                  src={item.icon}
-                  alt={item.name}
-                  className="w-12 h-12 group-hover:scale-110 transition-transform duration-300"
-                /> */}
                 {item.icon}
                 <div>
                   <h3 className="text-xl font-bold text-white">{item.name}</h3>
-                  {/* <div className="flex items-center space-x-2 text-sm text-gray-400">
-                    <Calendar className="w-4 h-4" />
-                    <span>{item.timeline}</span>
-                  </div> */}
                 </div>
               </div>
 
@@ -588,7 +772,7 @@ const Projects = () => {
   const projects = [
     {
       title: "InfoDoc - Online doctor infosite in local area",
-      image: mockImages.infodoc,
+      image: infoDoc,
       description:
         "A comprehensive online platform connecting patients with local healthcare providers.",
       tech: ["HTML", "CSS", "JavaScript"],
@@ -596,7 +780,7 @@ const Projects = () => {
     },
     {
       title: "GPA Calculator for K.S.Rangasamy College of Technology",
-      image: mockImages.cgpa,
+      image: cgpa,
       description:
         "An intuitive GPA calculation tool designed specifically for college students with grade tracking and semester management.",
       tech: ["JavaScript", "Bootstrap", "CSS"],
@@ -691,25 +875,11 @@ const Platforms = () => {
       link: "https://www.cloudskillsboost.google/public_profiles/e790f6cf-efc3-4e54-882a-5614a1107c66",
       color: "from-blue-500 to-purple-500",
     },
-    // {
-    //   name: "Salesforce",
-    //   description: "Cloud computing and Google Cloud Platform",
-    //   icon: <Award className="w-8 h-8" />,
-    //   stats: "5 skill badges earned",
-    //   link: "https://cloudskillsboost.google/your-profile",
-    //   color: "from-blue-500 to-purple-500",
-    // },
   ];
 
   return (
     <section id="platforms" className="py-20 px-6 md:px-12">
       <div className="max-w-6xl mx-auto">
-        {/* <div className="text-center mb-16" data-aos="fade-up">
-          <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-4">
-            Coding Platforms
-          </h2>
-          <p className="text-xl text-gray-300">Where I practice and showcase my programming skills</p>
-        </div> */}
         <p className="text-2xl font-semibold text-center mb-16 text-gray-300">
           Take a look into my other platform profiles...
         </p>
@@ -718,7 +888,7 @@ const Platforms = () => {
           {platforms.map((platform, index) => (
             <div
               key={platform.name}
-              className="bg-gray-900/50 rounded-2xl p-6 border border-gray-700 hover:border-yellow-400/50 transition-all duration-300 hover:scale-[1.05] group cursor-pointer"
+              className="bg-gray-900/50 rounded-2xl p-6 border border-gray-700 hover:border-yellow-400/50 transition-all duration-300 hover:scale-[1.05] group"
               data-aos="fade-up"
               style={{ animationDelay: `${index * 200}ms` }}
               onClick={() => window.open(platform.link, "_blank")}
