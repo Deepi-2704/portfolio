@@ -19,8 +19,6 @@ import {
   Award,
   BookOpen,
   Target,
-  Calendar,
-  Star,
   CheckCircle,
   Link2,
 } from "lucide-react";
@@ -28,10 +26,6 @@ import {
 import infoDoc from "./assets/imgs/infodoc.png";
 import cgpa from "./assets/imgs/cgpa.png";
 import me from "./assets/imgs/me.jpg";
-import express from "./assets/imgs/express.svg"
-import firebase from "./assets/imgs/firebase.svg"
-import mongodb from "./assets/imgs/mongodb.svg"
-import reactIcon from "./assets/imgs/react.svg"
 import tailwind from "./assets/imgs/tailwind.svg"
 
 // Mock data for images - replace with your actual imports
@@ -49,8 +43,6 @@ const mockImages = {
   firebase: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg",
   mongodb: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg",
   tailwind: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg",
-  infodoc: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?auto=format&fit=crop&w=800&h=600",
-  cgpa: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&h=600",
 };
 
 // Custom Cursor Component
@@ -621,7 +613,7 @@ const Skills = () => {
   return (
     <section
       id="skills"
-      className="py-20 px-6 md:px-12 bg-gradient-to-r from-black via-gray-900 to-black"
+      className="py-20 px-6 md:px-12"
     >
       <div className="max-w-6xl mx-auto">
         <h2
@@ -791,7 +783,7 @@ const Projects = () => {
   return (
     <section
       id="projects"
-      className="py-20 px-6 md:px-12 bg-gradient-to-r from-black via-gray-900 to-black"
+      className="py-20 px-6 md:px-12"
     >
       <div className="max-w-6xl mx-auto">
         <h2
@@ -929,7 +921,7 @@ const Platforms = () => {
 const Footer = () => (
   <footer
     id="contact"
-    className="py-20 px-6 md:px-12 bg-gradient-to-r from-gray-900 via-black to-gray-900"
+    className="py-20 px-6 md:px-12"
   >
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-12" data-aos="fade-up">
