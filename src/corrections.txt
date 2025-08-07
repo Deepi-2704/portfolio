@@ -1,0 +1,5 @@
+corrections to make:
+1. Remove the stars in skills sectiona and Also add these skills - React, Node.js, Express.js, MongoDB, Firebase, tailwind, java 
+2. Currently learning - Linked lists, Stack Queue, GCP
+3. merge the coding platforms section and skills to skills and learnings
+4. In MainContent use typewriting effect to cycle these words "Associate Cloud Engineer", "Fullstack Developer", "Web Designer", "Tech Driven Enthusiast" and also add similar terms
